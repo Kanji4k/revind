@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "rewind",
+  "version": "${version}",
+  "name": "Rewind",
+  "description": "Shadow Rewind + clipping with a pure-Java MJPEG/AVI encoder.",
+  "authors": ["you"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.rewind.RewindMod"],
+    "modmenu": ["com.example.rewind.ModMenuIntegration"]
+  },
+  "mixins": [{ "config": "rewind.mixins.json", "environment": "client" }],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

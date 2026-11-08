@@ -1,0 +1,6 @@
+{
+  "key.category.rewind.main": "Rewind",
+  "key.rewind.record": "Start/Stop Recording",
+  "key.rewind.clip": "Clip Last X Seconds",
+  "key.rewind.save": "Save Whole Shadow Buffer"
+}
