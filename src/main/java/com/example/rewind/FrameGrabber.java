@@ -16,13 +16,13 @@ import net.minecraft.client.Minecraft;
  * and the buffer from frame N-1 is mapped and downscaled, so the GPU never has to stall for us.
  * Compression/disk happen on the Encoder thread.
  */
-final class FrameGrabber {
+public final class FrameGrabber {
     private static final GpuBuffer[] bufs = new GpuBuffer[2];
     private static int w0, h0, wi;
     private static boolean pending;
     private static long pendTs, lastNs, nextNs, off, lastErr;
 
-    static void onFrame() {
+    public static void onFrame() {
         long now = System.nanoTime();
         Minecraft mc = Minecraft.getInstance();
         Config c = Config.I;
