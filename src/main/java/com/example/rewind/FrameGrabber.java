@@ -68,20 +68,28 @@ public final class FrameGrabber {
 
     /** Nearest-neighbour downscale + vertical flip + RGBA->RGB, straight into the image's int[]. */
     private static void process(CommandEncoder enc, GpuBuffer b) {
-        float s = Math.min(1f, Config.PRESET_H[Config.I.preset] * Governor.scale() / h0);
+        float s = Math.min(1f, Config.I.res * Governor.scale() / h0);
         int tw = Math.max(2, Math.round(w0 * s) & ~1), th = Math.max(2, Math.round(h0 * s) & ~1);
         BufferedImage img = Encoder.obtain(tw, th);
         int[] px = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
         int[] xm = new int[tw];
         for (int x = 0; x < tw; x++) xm[x] = (int) ((2L * x + 1) * w0 / (2L * tw));
+        boolean down = w0 > tw * 1.2f; // 2x2 box filter when shrinking (smoother), plain copy otherwise
         try (GpuBuffer.MappedView mv = enc.mapBuffer(b, true, false)) {
             IntBuffer ib = mv.data().order(ByteOrder.LITTLE_ENDIAN).asIntBuffer();
             for (int y = 0; y < th; y++) {
                 int sy = (int) ((2L * y + 1) * h0 / (2L * th));
-                int row = (h0 - 1 - sy) * w0, o = y * tw;
+                int ry = Math.min(h0 - 1, sy + 1);
+                int row = (h0 - 1 - sy) * w0, row2 = (h0 - 1 - ry) * w0, o = y * tw;
                 for (int x = 0; x < tw; x++) {
-                    int v = ib.get(row + xm[x]); // bytes R,G,B,A -> little-endian int 0xAABBGGRR
-                    px[o + x] = ((v & 0xFF) << 16) | (v & 0xFF00) | ((v >>> 16) & 0xFF);
+                    int sx = xm[x];
+                    if (!down) { px[o + x] = ib.get(row + sx) & 0xFFFFFF; continue; }
+                    int sx2 = Math.min(w0 - 1, sx + 1);
+                    int a = ib.get(row + sx), bb = ib.get(row + sx2), c = ib.get(row2 + sx), d = ib.get(row2 + sx2);
+                    int r = ((a & 0xFF0000) + (bb & 0xFF0000) + (c & 0xFF0000) + (d & 0xFF0000)) >> 2 & 0xFF0000;
+                    int g = ((a & 0xFF00) + (bb & 0xFF00) + (c & 0xFF00) + (d & 0xFF00)) >> 2 & 0xFF00;
+                    int bl = ((a & 0xFF) + (bb & 0xFF) + (c & 0xFF) + (d & 0xFF)) >> 2;
+                    px[o + x] = r | g | bl;
                 }
             }
         }
