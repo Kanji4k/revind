@@ -12,13 +12,12 @@ public final class Config {
     public boolean mic = false;                                   // phase 2
     public boolean onDeath = true, onLowHealth = false, onKill = false, onElytra = false; // phase 2
     public int shadowSeconds = 60, maxMb = 1024, clipSeconds = 30, postSeconds = 0;
-    public int fps = 30, preset = 1, sound = 1;
+    public int fps = 30, res = 720, preset = 2, sound = 1; // res = video height; preset = JPEG quality
 
     public static final String[] PRESET_NAME = {"Low", "Medium", "High"};
-    public static final int[] PRESET_H = {480, 720, 1080}, PRESET_FPS = {20, 30, 60};
-    public static final float[] PRESET_Q = {0.5f, 0.7f, 0.85f};
+    public static final float[] PRESET_Q = {0.6f, 0.8f, 0.92f};
 
-    public int effFps() { return Math.min(fps, PRESET_FPS[preset]); }
+    public int effFps() { return fps; }
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("rewind.json");
@@ -29,7 +28,8 @@ public final class Config {
         try { if (Files.exists(FILE)) { Config r = GSON.fromJson(Files.readString(FILE), Config.class); if (r != null) c = r; } }
         catch (Exception e) { RewindMod.LOG.warn("Bad rewind.json, using defaults", e); }
         c.preset = Math.max(0, Math.min(2, c.preset));
-        c.fps = Math.max(5, Math.min(60, c.fps));
+        c.fps = c.fps >= 60 ? 60 : 30;
+        c.res = c.res >= 1080 ? 1080 : c.res >= 720 ? 720 : 360;
         c.shadowSeconds = Math.max(30, Math.min(600, c.shadowSeconds));
         c.maxMb = Math.max(64, c.maxMb);
         c.clipSeconds = Math.max(5, c.clipSeconds);
